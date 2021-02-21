@@ -1,0 +1,4 @@
+[submodule "lib/serialization"]
+	path = lib/serialization
+	url = git@github.com:impresario-systems/serialization.git
+	branch = dev
