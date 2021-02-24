@@ -15,14 +15,6 @@ def general_preparation():
         pi.execute_ignore_stdout("sudo service sshd restart")
 
 
-def install_flat_buffers():
-    with PiClient(PI_IP_ADDRESS) as pi:
-        pi.execute("git clone https://github.com/google/flatbuffers.git")
-        pi.execute("cd flatBuffers && git checkout v1.12.0")
-        pi.execute("cd flatBuffers && cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Release")
-        pi.execute("cd flatBuffers && sudo make install")
-
-
 def install_zmq():
     with PiClient(PI_IP_ADDRESS) as pi:
         pi.execute("sudo apt -y install libzmq3-dev")
@@ -30,7 +22,7 @@ def install_zmq():
         pi.execute("cd cppzmq && git checkout v4.7.1")
         pi.execute("cd cppzmq && mkdir build")
         pi.execute("cd cppzmq/build && cmake -DCPPZMQ_BUILD_TESTS=OFF ..")
-        pi.execute("cd cppzmq && sudo make -j4 install")
+        pi.execute("cd cppzmq/build && sudo make -j4 install")
 
 
 def install_spdlog():
