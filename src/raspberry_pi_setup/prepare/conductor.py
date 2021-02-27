@@ -1,14 +1,15 @@
-from raspberry_pi_setup.config import PI_IP_ADDRESS
+from raspberry_pi_setup.config import load_config, YAML_PATH
 from raspberry_pi_setup.pi_client import PiClient
 from raspberry_pi_setup.prepare.shared import general_preparation, install_zmq, install_spdlog
 
 
 def main():
-    general_preparation()
-    install_zmq()
-    install_spdlog()
+    config = load_config(YAML_PATH)
+    general_preparation(config)
+    install_zmq(config)
+    install_spdlog(config)
 
-    with PiClient(PI_IP_ADDRESS) as pi:
+    with PiClient(config.pi_ip_address) as pi:
         # portaudio
         pi.execute("sudo apt -y install libasound-dev")
         pi.execute("sudo sed -i'' -e '/^pcm\\.rear cards\\.pcm\\.rear$/d' /usr/share/alsa/alsa.conf")
