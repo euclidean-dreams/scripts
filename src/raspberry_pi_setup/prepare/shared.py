@@ -7,6 +7,8 @@ def general_preparation(config):
         pi.execute("sudo apt -y update")
         pi.execute("sudo apt -y upgrade")
         pi.execute("sudo apt -y install cmake git")
+        pi.execute("git config --global user.email \"impresario.bot@gmail.com\"")
+        pi.execute("git config --global user.name \"impresario bot\"")
 
         # only necessary for remote development
         pi.execute("sudo passwd root", input_lines=[config.pi_root_password, config.pi_root_password])
