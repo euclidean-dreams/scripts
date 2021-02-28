@@ -13,6 +13,13 @@ def general_preparation(config):
         pi.execute("echo 'PermitRootLogin yes' | sudo tee -a /etc/ssh/sshd_config")
         pi.execute_ignore_stdout("sudo service sshd restart")
 
+    with PiClient(config.pi_ip_address, username="root", password=config.pi_root_password) as pi:
+        pi.upload_file(config.ssh_key_path, "/root/.ssh/id_rsa")
+        pi.upload_file(f"{config.ssh_key_path}.pub", "/root/.ssh/id_rsa.pub")
+        pi.execute("chmod 600 /root/.ssh/id_rsa")
+        pi.execute("chmod 600 /root/.ssh/id_rsa.pub")
+        pi.execute("ssh-keyscan -H github.com >> ~/.ssh/known_hosts")
+
 
 def install_zmq(config):
     with PiClient(config.pi_ip_address) as pi:

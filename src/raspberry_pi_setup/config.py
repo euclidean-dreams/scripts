@@ -12,13 +12,15 @@ class Config(yaml.YAMLObject):
                  network_ssid,
                  network_password,
                  pi_ip_address,
-                 pi_root_password):
+                 pi_root_password,
+                 ssh_key_path):
         self.boot_directory_path = boot_directory_path
         self.network_country_code = network_country_code
         self.network_ssid = network_ssid
         self.network_password = network_password
         self.pi_ip_address = pi_ip_address
         self.pi_root_password = pi_root_password
+        self.ssh_key = ssh_key_path
 
 
 def load_config(file_path):

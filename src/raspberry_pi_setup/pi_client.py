@@ -8,12 +8,15 @@ class PiClient:
         self.hostname = hostname
         self.username = username
         self.password = password
+        self.sftp_client = None
 
     def __enter__(self):
         self.ssh_client.connect(hostname=self.hostname, username=self.username, password=self.password)
+        self.sftp_client = self.ssh_client.open_sftp()
         return self
 
     def __exit__(self, exit_type, value, traceback):
+        self.sftp_client.close()
         self.ssh_client.close()
 
     def execute(self, command, input_lines=None):
@@ -31,3 +34,6 @@ class PiClient:
     def execute_ignore_stdout(self, command):
         print(command)
         self.ssh_client.exec_command(command)
+
+    def upload_file(self, local_path, remote_path):
+        self.sftp_client.put(local_path, remote_path)
