@@ -13,7 +13,9 @@ class Config(yaml.YAMLObject):
                  network_password,
                  pi_ip_address,
                  pi_root_password,
-                 ssh_key_path):
+                 ssh_key_path,
+                 git_email,
+                 git_username):
         self.boot_directory_path = boot_directory_path
         self.network_country_code = network_country_code
         self.network_ssid = network_ssid
@@ -21,6 +23,8 @@ class Config(yaml.YAMLObject):
         self.pi_ip_address = pi_ip_address
         self.pi_root_password = pi_root_password
         self.ssh_key = ssh_key_path
+        self.git_email = git_email
+        self.git_username = git_username
 
 
 def load_config(file_path):
