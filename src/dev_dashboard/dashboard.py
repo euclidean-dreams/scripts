@@ -3,7 +3,7 @@ import zmq
 
 from dev_dashboard.audio_attributes_receiver import AudioAttributesReceiver
 from dev_dashboard.conductor_messenger import ConductorMessenger
-from dev_dashboard.config import CONDUCTOR_PARAMETER_ENDPOINT, CONDUCTOR_AUDIO_ATTRIBUTES_ENDPOINT
+from dev_dashboard.config import CONDUCTOR_PARAMETER_ENDPOINT, CONDUCTOR_AUDIO_ATTRIBUTES_ENDPOINT, SIZE_MULTIPLIER
 from dev_dashboard.onset_root_frame import create_onset_root_frame, bind_onset_threshold_sliders, \
     bind_onset_silence_sliders
 from dev_dashboard.signaler import Signaler
@@ -18,9 +18,9 @@ attributes_receiver = AudioAttributesReceiver(signaler, context, CONDUCTOR_AUDIO
 gui.theme("Dark Purple 3")
 
 output = gui.Output(
-    size=(0, 10),
+    size=(round(0 * SIZE_MULTIPLIER), round(10 * SIZE_MULTIPLIER)),
     key="output",
-    font=("Helvetica", 15)
+    font=("Helvetica", round(15 * SIZE_MULTIPLIER))
 )
 
 layout = [
@@ -31,7 +31,7 @@ layout = [
 window = gui.Window(
     "Impresario Dashboard",
     layout=layout,
-    location=(200, 200),
+    location=(round(200 * SIZE_MULTIPLIER), round(200 * SIZE_MULTIPLIER)),
     finalize=True
 )
 bind_onset_threshold_sliders(window)
