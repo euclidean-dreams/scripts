@@ -1,11 +1,10 @@
 import PySimpleGUI as gui
 import zmq
 
-from dev_dashboard.audio_attributes_receiver import AudioAttributesReceiver
 from dev_dashboard.conductor_messenger import ConductorMessenger
-from dev_dashboard.config import CONDUCTOR_PARAMETER_ENDPOINT, CONDUCTOR_AUDIO_ATTRIBUTES_ENDPOINT, SIZE_MULTIPLIER
+from dev_dashboard.config import CONDUCTOR_PARAMETER_ENDPOINT, SIZE_MULTIPLIER
 from dev_dashboard.onset_root_frame import create_onset_root_frame, bind_onset_threshold_sliders, \
-    bind_onset_silence_sliders
+    bind_onset_peak_picking_window_size_sliders, bind_onset_peak_picking_window_tail_sliders
 from dev_dashboard.signaler import Signaler
 from dev_dashboard.utils import get_onset_method_from_string, get_onset_method_names
 
@@ -13,19 +12,19 @@ signaler = Signaler()
 context = zmq.Context()
 messenger = ConductorMessenger(context, CONDUCTOR_PARAMETER_ENDPOINT)
 messenger.initialize_onset_parameters_to_default()
-attributes_receiver = AudioAttributesReceiver(signaler, context, CONDUCTOR_AUDIO_ATTRIBUTES_ENDPOINT)
+# onset_receiver = OnsetReceiver(signaler, context, CONDUCTOR_OUTPUT_ENDPOINT)
 
 gui.theme("Dark Purple 3")
 
 output = gui.Output(
-    size=(round(0 * SIZE_MULTIPLIER), round(10 * SIZE_MULTIPLIER)),
+    size=(round(0), round(20 * SIZE_MULTIPLIER)),
     key="output",
-    font=("Helvetica", round(15 * SIZE_MULTIPLIER))
+    font=("Helvetica", round(25 * SIZE_MULTIPLIER))
 )
 
 layout = [
     [create_onset_root_frame()],
-    [output]
+    # [output]
 ]
 
 window = gui.Window(
@@ -35,11 +34,12 @@ window = gui.Window(
     finalize=True
 )
 bind_onset_threshold_sliders(window)
-bind_onset_silence_sliders(window)
+bind_onset_peak_picking_window_size_sliders(window)
+bind_onset_peak_picking_window_tail_sliders(window)
 
-output.expand(expand_x=True)
+# output.expand(expand_x=True)
 
-attributes_receiver.start()
+# onset_receiver.start()
 
 finished = False
 while not finished:
@@ -52,23 +52,36 @@ while not finished:
             element_category = event_parts[0]
             element_identifier = event_parts[1]
             event_type = event_parts[2]
-            if element_category in ("onset_threshold", "onset_silence") and event_type == "left_click_released":
+            if element_category in \
+                    ("onset_threshold", "onset_peak_picking_window_size", "onset_peak_picking_window_tail") \
+                    and event_type == "left_click_released":
                 if element_identifier == "master":
                     for onset_name in get_onset_method_names():
                         window[f"{element_category}|{onset_name}"].update(value=values[f"{element_category}|master"])
                         onset_method = get_onset_method_from_string(onset_name)
                         if element_category == "onset_threshold":
                             onset_threshold = values[f"onset_threshold|master"]
-                            onset_silence = values[f"onset_silence|{onset_name}"]
-                        else:
+                            onset_peak_picking_window_size = values[f"onset_peak_picking_window_size|{onset_name}"]
+                            onset_peak_picking_window_tail = values[f"onset_peak_picking_window_tail|{onset_name}"]
+                        elif element_category == "onset_peak_picking_window_size":
                             onset_threshold = values[f"onset_threshold|{onset_name}"]
-                            onset_silence = values[f"onset_silence|master"]
-                        messenger.send_onset_parameters(onset_method, onset_threshold, onset_silence)
+                            onset_peak_picking_window_size = values[f"onset_peak_picking_window_size|master"]
+                            onset_peak_picking_window_tail = values[f"onset_peak_picking_window_tail|{onset_name}"]
+                        elif element_category == "onset_peak_picking_window_tail":
+                            onset_threshold = values[f"onset_threshold|{onset_name}"]
+                            onset_peak_picking_window_size = values[f"onset_peak_picking_window_size|{onset_name}"]
+                            onset_peak_picking_window_tail = values[f"onset_peak_picking_window_tail|master"]
+                        else:
+                            raise TypeError("got invalid element category")
+                        messenger.send_onset_parameters(onset_method, onset_threshold, onset_peak_picking_window_size,
+                                                        onset_peak_picking_window_tail)
                 else:
                     onset_method = get_onset_method_from_string(element_identifier)
                     onset_threshold = values[f"onset_threshold|{element_identifier}"]
-                    onset_silence = values[f"onset_silence|{element_identifier}"]
-                    messenger.send_onset_parameters(onset_method, onset_threshold, onset_silence)
+                    onset_peak_picking_window_size = values[f"onset_peak_picking_window_size|{element_identifier}"]
+                    onset_peak_picking_window_tail = values[f"onset_peak_picking_window_tail|{element_identifier}"]
+                    messenger.send_onset_parameters(onset_method, onset_threshold, onset_peak_picking_window_size,
+                                                    onset_peak_picking_window_tail)
 
 signaler.signal_shutdown()
 window.close()

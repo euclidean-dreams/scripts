@@ -1,6 +1,7 @@
 import PySimpleGUI as gui
 
-from dev_dashboard.config import DEFAULT_ONSET_THRESHOLD, DEFAULT_ONSET_SILENCE, SIZE_MULTIPLIER
+from dev_dashboard.config import DEFAULT_ONSET_THRESHOLD, SIZE_MULTIPLIER, DEFAULT_ONSET_PEAK_PICKING_WINDOW_SIZE, \
+    DEFAULT_ONSET_PEAK_PICKING_WINDOW_TAIL
 from dev_dashboard.utils import get_onset_method_names
 
 
@@ -10,7 +11,11 @@ def create_onset_root_frame():
     onset_methods.append("master")
     for onset_method in onset_methods:
         onset_frame_layout = [
-            [create_onset_threshold_slider(onset_method), create_onset_silence_slider(onset_method)]
+            [
+                create_onset_threshold_slider(onset_method),
+                create_onset_peak_picking_window_size_slider(onset_method),
+                create_onset_peak_picking_window_tail_slider(onset_method)
+            ]
         ]
 
         onset_frame = gui.Frame(
@@ -50,13 +55,24 @@ def create_onset_threshold_slider(onset_method):
     )
 
 
-def create_onset_silence_slider(onset_method):
+def create_onset_peak_picking_window_size_slider(onset_method):
     return gui.Slider(
-        range=(-20, -90),
-        default_value=DEFAULT_ONSET_SILENCE,
+        range=(1, 25),
+        default_value=DEFAULT_ONSET_PEAK_PICKING_WINDOW_SIZE,
         resolution=1,
         border_width=round(5 * SIZE_MULTIPLIER),
-        key=f"onset_silence|{onset_method}",
+        key=f"onset_peak_picking_window_size|{onset_method}",
+        size=(round(15 * SIZE_MULTIPLIER), round(40 * SIZE_MULTIPLIER))
+    )
+
+
+def create_onset_peak_picking_window_tail_slider(onset_method):
+    return gui.Slider(
+        range=(1, 25),
+        default_value=DEFAULT_ONSET_PEAK_PICKING_WINDOW_TAIL,
+        resolution=1,
+        border_width=round(5 * SIZE_MULTIPLIER),
+        key=f"onset_peak_picking_window_tail|{onset_method}",
         size=(round(15 * SIZE_MULTIPLIER), round(40 * SIZE_MULTIPLIER))
     )
 
@@ -69,9 +85,17 @@ def bind_onset_threshold_sliders(window):
         slider.bind("<ButtonRelease-1>", "|left_click_released")
 
 
-def bind_onset_silence_sliders(window):
+def bind_onset_peak_picking_window_size_sliders(window):
     onset_methods = get_onset_method_names()
     onset_methods.append("master")
     for onset_method in onset_methods:
-        slider = window[f"onset_silence|{onset_method}"]
+        slider = window[f"onset_peak_picking_window_size|{onset_method}"]
+        slider.bind("<ButtonRelease-1>", "|left_click_released")
+
+
+def bind_onset_peak_picking_window_tail_sliders(window):
+    onset_methods = get_onset_method_names()
+    onset_methods.append("master")
+    for onset_method in onset_methods:
+        slider = window[f"onset_peak_picking_window_tail|{onset_method}"]
         slider.bind("<ButtonRelease-1>", "|left_click_released")
