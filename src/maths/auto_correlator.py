@@ -1,7 +1,6 @@
 class AutoCorrelator:
     def __init__(self, signal, initial_iterations, initial_frequency):
         self.signal = signal
-        self.signal_derivative = self.calculate_signal_derivative()
         self.iterations = initial_iterations
         self.frequency = initial_frequency
         self.shifted_signals_x = None
@@ -12,23 +11,24 @@ class AutoCorrelator:
         self.rebuild_iterations()
         self.auto_correlate()
 
-    def calculate_signal_derivative(self):
-        result = []
+    def shift_signal(self, iteration):
         for index, sample in enumerate(self.signal):
             if index == 0:
                 derivative = 0
             else:
                 derivative = sample - self.signal[index - 1]
-            result.append(derivative)
-        return result
+            destination_index = (index + self.frequency * iteration) % len(self.signal)
+            self.shifted_signals_y[iteration][destination_index] = derivative
 
     def auto_correlate(self):
+        for iteration in range(self.iterations):
+            self.shift_signal(iteration)
         for iteration, shifted_signal in enumerate(self.shifted_signals_y):
             for index, sample in enumerate(shifted_signal):
                 if iteration == 0:
-                    self.auto_correlated_signal[index] = shifted_signal[index] ** 1 / 3
+                    self.auto_correlated_signal[index] = shifted_signal[index]
                 else:
-                    self.auto_correlated_signal[index] *= shifted_signal[index] ** 1 / 3
+                    self.auto_correlated_signal[index] *= shifted_signal[index]
         self.auto_correlation_integral = 0
         for sample in self.auto_correlated_signal:
             self.auto_correlation_integral += sample
