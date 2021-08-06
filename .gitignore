@@ -3,3 +3,4 @@ venv/
 **/__pycache__/
 secrets/*
 !secrets/config-template.yml
+/src/maths/data

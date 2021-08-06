@@ -1,123 +1,76 @@
-import json
-
 from bokeh.io import curdoc
 from bokeh.layouts import layout
 from bokeh.models import LinearColorMapper, Slider
 from bokeh.palettes import Viridis256, Cividis256
 from bokeh.plotting import figure
 
-from auto_correlator import AutoCorrelator
 from data_source_manager import DataSourceManger
 from harmonic_transformer import HarmonicTransformer
+from spectrogram_manager import SpectrogramManager
 
-DATA_FILE_NAME = "perpet-5_80.json"
-INITIAL_FREQUENCY = 48
-AUTO_CORRELATION_ITERATIONS = 2
+DATA_FILE_NAME = "../spectrogram_explorer/quickAndCurious.jl"
+INITIAL_SPECTROGRAM_INDEX = 821
+INITIAL_FREQUENCY = 30
+INITIAL_PEAK_SQUISH = 1
+MAX_PARTIALS = 5
 
-with open(f"data/{DATA_FILE_NAME}", "r") as data_file:
-    signal = json.load(data_file)
-
-harmonic_transformer = HarmonicTransformer(signal, INITIAL_FREQUENCY)
-auto_correlator = AutoCorrelator(signal, AUTO_CORRELATION_ITERATIONS, INITIAL_FREQUENCY)
-data_source_manager = DataSourceManger(signal, harmonic_transformer, auto_correlator)
+spectrogram_manager = SpectrogramManager(DATA_FILE_NAME)
+initial_signal = spectrogram_manager.get_signal(INITIAL_SPECTROGRAM_INDEX)
+harmonic_transformer = HarmonicTransformer(initial_signal, INITIAL_FREQUENCY, INITIAL_PEAK_SQUISH, MAX_PARTIALS)
+data_source_manager = DataSourceManger(initial_signal, harmonic_transformer)
 
 document = curdoc()
 viridis_color_mapper = LinearColorMapper(palette=Viridis256, high=1810)
 cividis_color_mapper = LinearColorMapper(palette=Cividis256)
 
 #
-# squash t plot
-#
-squash_t_plot = figure(
-    title="Squash t",
-    x_axis_label="Real",
-    y_axis_label="Imaginary",
-    plot_width=750,
-    plot_height=750,
-    tools=["crosshair,wheel_zoom,pan,reset"],
-    active_drag="pan",
-    active_scroll="wheel_zoom",
-    tooltips=[
-        ("t", "@t"),
-        ("(real, imaginary)", "($x, $y)")
-    ]
-)
-
-squash_t_plot.multi_line(
-    source=data_source_manager.peak_vector_data,
-    line_alpha=0.5,
-    line_color={"field": "t", "transform": viridis_color_mapper}
-)
-squash_t_plot.dot(
-    source=data_source_manager.harmonic_transform_data,
-    color={"field": "t", "transform": viridis_color_mapper},
-    size=15
-)
-squash_t_plot.line(source=data_source_manager.harmonic_transform_data, line_alpha=0.5, line_color="#e68cd5")
-
-#
 # frequency slider
 #
 frequency_slider = Slider(
-    start=0,
-    end=300,
+    start=10,
+    end=100,
     value=INITIAL_FREQUENCY,
-    step=1,
+    step=1 / MAX_PARTIALS,
     title="Frequency",
     sizing_mode="stretch_width"
 )
-iteration_slider = Slider(
+peak_squish_slider = Slider(
     start=0,
-    end=10,
-    value=AUTO_CORRELATION_ITERATIONS,
+    end=5,
+    value=INITIAL_PEAK_SQUISH,
+    step=0.1,
+    title="Peak Squish",
+    sizing_mode="stretch_width"
+)
+spectrogram_index_slider = Slider(
+    start=0,
+    end=spectrogram_manager.get_max_index(),
+    value=INITIAL_SPECTROGRAM_INDEX,
     step=1,
-    title="Autocorrelation iterations",
+    title="Spectrogram Index",
     sizing_mode="stretch_width"
 )
 
 
 def frequency_slider_callback(attr, old, new):
-    # harmonic_transformer.calculate(new)
-    auto_correlator.update_frequency(new)
+    harmonic_transformer.update_frequency(new)
     data_source_manager.update()
 
 
-def iteration_slider_callback(attr, old, new):
-    auto_correlator.update_iterations(new)
+def peak_squish_slider_callback(attr, old, new):
+    harmonic_transformer.update_peak_squish(new)
     data_source_manager.update()
+
+
+def spectrogram_index_slider_callback(attr, old, new):
+    signal = spectrogram_manager.get_signal(new)
+    harmonic_transformer.update_signal(signal)
+    data_source_manager.update_signal(signal)
 
 
 frequency_slider.on_change('value', frequency_slider_callback)
-iteration_slider.on_change('value', iteration_slider_callback)
-
-#
-# intersection with rt plane
-#
-intersection_plot = figure(
-    title="Intersection With rt Plane",
-    x_axis_label="t",
-    y_axis_label="r",
-    plot_width=750,
-    plot_height=750,
-    tools=["hover,wheel_zoom,pan,reset"],
-    active_drag="pan",
-    active_scroll="wheel_zoom"
-)
-intersection_plot.dot(
-    source=data_source_manager.intersection_data,
-    color={"field": "x", "transform": viridis_color_mapper},
-    size=15
-)
-intersection_plot.line(
-    source=data_source_manager.intersection_data,
-    line_alpha=0.5,
-    line_color="#e68cd5"
-)
-intersection_plot.dot(
-    source=data_source_manager.intersection_integral_data,
-    color="#ffbd08",
-    size=50
-)
+peak_squish_slider.on_change('value', peak_squish_slider_callback)
+spectrogram_index_slider.on_change('value', spectrogram_index_slider_callback)
 
 #
 # original signal plot
@@ -146,17 +99,40 @@ signal_plot.dot(
     color={"field": "x", "transform": viridis_color_mapper},
     size=15
 )
-signal_plot.dot(
-    source=data_source_manager.signal_peak_data,
-    color="#ffbd08",
-    size=25
-)
+
+# #
+# # harmonic transform output
+# #
+# harmonic_transform_output_plot = figure(
+#     title="Harmonic Transform Output",
+#     x_axis_label="Frequency Bin",
+#     y_axis_label="Magnitude",
+#     plot_width=1650,
+#     plot_height=750,
+#     tools=["hover,wheel_zoom,pan,reset"],
+#     active_drag="pan",
+#     active_scroll="wheel_zoom",
+#     tooltips=[
+#         ("frequency bin", "@x"),
+#         ("magnitude", "@y")
+#     ]
+# )
+# harmonic_transform_output_plot.line(
+#     source=data_source_manager.harmonic_transform,
+#     line_alpha=1,
+#     line_color="#e68cd5"
+# )
+# harmonic_transform_output_plot.dot(
+#     source=data_source_manager.harmonic_transform,
+#     color={"field": "x", "transform": viridis_color_mapper},
+#     size=15
+# )
 
 #
-# harmonic transform plot
+# harmonic transform intermediary plot
 #
-harmonic_transsform_plot = figure(
-    title="Harmonic Transform",
+harmonic_transform_internal_plot = figure(
+    title="Harmonic Transform Internals",
     x_axis_label="Original Frequency Bin",
     y_axis_label="Magnitude",
     plot_width=1650,
@@ -169,15 +145,28 @@ harmonic_transsform_plot = figure(
         ("magnitude", "@y")
     ]
 )
-harmonic_transsform_plot.multi_line(
-    source=data_source_manager.shifted_signals,
-    line_color={"field": "iteration", "transform": cividis_color_mapper}
+harmonic_transform_internal_plot.line(
+    source=data_source_manager.signal_data,
+    line_color="#020061",
+    legend_label="Original Signal"
 )
-harmonic_transsform_plot.line(
-    source=data_source_manager.auto_correlated_signal,
-    line_alpha=1,
-    line_color="#20ff00"
+harmonic_transform_internal_plot.line(
+    source=data_source_manager.signal_derivative_data,
+    line_color="#4f4cba",
+    legend_label="Signal Derivative"
 )
+harmonic_transform_internal_plot.line(
+    source=data_source_manager.harmonic_signal_data,
+    line_color="#ffbe0d",
+    legend_label="Comparison Signal"
+)
+harmonic_transform_internal_plot.line(
+    source=data_source_manager.result_signal_data,
+    line_color="#009c00",
+    legend_label="Output Signal"
+)
+harmonic_transform_internal_plot.legend.location = "top_left"
+harmonic_transform_internal_plot.legend.click_policy = "hide"
 
 #
 # harmonic transform integral plot
@@ -193,17 +182,18 @@ harmonic_transform_integral_plot = figure(
     active_scroll="wheel_zoom"
 )
 harmonic_transform_integral_plot.dot(
-    source=data_source_manager.auto_correlation_integral_data,
-    color="#e278ff",
+    source=data_source_manager.harmonic_integral_data,
+    color="#fa2fce",
     size=100
 )
 
 layout = layout(
-    # [squash_t_plot, intersection_plot],
     [frequency_slider],
-    [iteration_slider],
-    [harmonic_transsform_plot, harmonic_transform_integral_plot],
-    [signal_plot]
+    [peak_squish_slider],
+    [spectrogram_index_slider],
+    [harmonic_transform_internal_plot, harmonic_transform_integral_plot],
+    [signal_plot],
+    # [harmonic_transform_output_plot]
 )
 
 document.add_root(layout)

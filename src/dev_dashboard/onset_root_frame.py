@@ -46,9 +46,9 @@ def create_onset_root_frame():
 
 def create_onset_threshold_slider(onset_method):
     return gui.Slider(
-        range=(0.0, 2.5),
+        range=(0.0, 20),
         default_value=DEFAULT_ONSET_THRESHOLD,
-        resolution=0.01,
+        resolution=0.1,
         border_width=round(5 * SIZE_MULTIPLIER),
         key=f"onset_threshold|{onset_method}",
         size=(round(15 * SIZE_MULTIPLIER), round(40 * SIZE_MULTIPLIER))

@@ -35,12 +35,8 @@ def main():
         pi.execute("cd ~/portaudio && ./configure")
         pi.execute("cd ~/portaudio && sudo make install")
 
-        # aubio
-        pi.execute("sudo apt -y install libfftw3-dev libblas-dev")
-        pi.execute("curl -L -o aubio.tar.bz2 https://aubio.org/pub/aubio-0.4.9.tar.bz2")
-        pi.execute("tar -xf ~/aubio.tar.bz2 -C ~")
-        pi.execute("rm ~/aubio.tar.bz2")
-        pi.execute("cd ~/aubio-0.4.9 && sudo ./waf configure build install --enable-fftw3 --enable-blas")
+        # pybind11
+        pi.execute("sudo apt -y install python3-dev")
 
         # finalize
         pi.execute("sudo ldconfig")
