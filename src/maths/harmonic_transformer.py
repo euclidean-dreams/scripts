@@ -16,16 +16,16 @@ class HarmonicTransformer:
             self.signal_derivative, self.harmonic_signal, self.result_signal
         )
 
-    @staticmethod
-    def calculate_signal_derivative(signal):
-        result = []
-        for index, sample in enumerate(signal):
-            if index == 0 or index == len(signal) - 1:
-                derivative = 0
-            else:
-                derivative = (signal[index + 1] - signal[index - 1]) / 2
-            result.append(derivative)
-        return result
+    # @staticmethod
+    # def calculate_signal_derivative(signal):
+    #     result = []
+    #     for index, sample in enumerate(signal):
+    #         if index == 0 or index == len(signal) - 1:
+    #             derivative = 0
+    #         else:
+    #             derivative = (signal[index + 1] - signal[index - 1]) / 2
+    #         result.append(derivative)
+    #     return result
 
     @staticmethod
     def calculate_basic_signal_derivative(signal):
@@ -43,11 +43,13 @@ class HarmonicTransformer:
         for n in range(1, self.max_partials + 1):
             signal_component = []
             shift = n * frequency
+            peak_value = self.signal[round(shift)]
             for x, sample in enumerate(self.signal):
                 component = (x - shift) / self.harmonic_signal_peak_squish
                 decay = n ** self.harmonic_peak_decay
                 value = -component / decay * math.exp(-(component ** 2))
-                signal_component.append(self.harmonic_signal_multiplier * value)
+                multiplier = self.harmonic_signal_multiplier / peak_value
+                signal_component.append(multiplier * value)
             signal_components.append(signal_component)
 
         result_signal = [0 for i in signal_components[0]]

@@ -9,7 +9,7 @@ from harmonic_transformer import HarmonicTransformer
 from spectrogram_manager import SpectrogramManager
 
 DATA_FILE_NAME = "../spectrogram_explorer/quickAndCurious.jl"
-INITIAL_SPECTROGRAM_INDEX = 821
+INITIAL_SPECTROGRAM_INDEX = 215
 INITIAL_FREQUENCY = 30
 INITIAL_PEAK_SQUISH = 1
 MAX_PARTIALS = 5
