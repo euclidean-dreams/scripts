@@ -8,6 +8,8 @@ from bokeh.io import show
 from bokeh.models import ColumnDataSource, LinearColorMapper
 from bokeh.palettes import Inferno256
 from bokeh.plotting import figure
+from tchotchke.logger import Logger
+from tchotchke.shell import Shell
 
 TITLE = "Spectrogram"
 X_AXIS_LABEL = "Time"
@@ -66,5 +68,14 @@ def visualize(input_file_name):
     show(output)
 
 
+def update_file(logger):
+    shell = Shell(logger)
+    result = shell.execute_for_stdout("rsync -avz root@10.0.0.181:/root/output/quickAndCurious.jl .")
+    logger.info(result)
+
+
 if __name__ == '__main__':
-    visualize("quickAndCurious.jl")
+    logger = Logger()
+    with logger.log_uncaught_exceptions():
+        update_file(logger)
+        visualize("quickAndCurious.jl")
