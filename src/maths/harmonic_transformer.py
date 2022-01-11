@@ -48,8 +48,8 @@ class HarmonicTransformer:
                 component = (x - shift) / self.harmonic_signal_peak_squish
                 decay = n ** self.harmonic_peak_decay
                 value = -component / decay * math.exp(-(component ** 2))
-                multiplier = self.harmonic_signal_multiplier / peak_value
-                signal_component.append(multiplier * value)
+                # multiplier = self.harmonic_signal_multiplier / peak_value
+                signal_component.append(1000 * value)
             signal_components.append(signal_component)
 
         result_signal = [0 for i in signal_components[0]]

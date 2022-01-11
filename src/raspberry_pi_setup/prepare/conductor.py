@@ -15,7 +15,6 @@ def main():
         pi.execute("sudo sed -i'' -e '/^pcm\\.rear cards\\.pcm\\.rear$/d' /usr/share/alsa/alsa.conf")
         pi.execute("sudo sed -i'' -e '/^pcm\\.center_lfe cards\\.pcm\\.center_lfe$/d' /usr/share/alsa/alsa.conf")
         pi.execute("sudo sed -i'' -e '/^pcm\\.side cards\\.pcm\\.side$/d' /usr/share/alsa/alsa.conf")
-        pi.execute("sudo sed -i'' -e '/^pcm\\.hdmi cards\\.pcm\\.hdmi$/d' /usr/share/alsa/alsa.conf")
         pi.execute("sudo sed -i'' -e '/^pcm\\.modem cards\\.pcm\\.modem$/d' /usr/share/alsa/alsa.conf")
         pi.execute("sudo sed -i'' -e '/^pcm\\.phoneline cards\\.pcm\\.phoneline$/d' /usr/share/alsa/alsa.conf")
         pi.execute("sudo sed -i'' -e '/^pcm\\.hdmi cards\\.pcm\\.hdmi$/d' /usr/share/alsa/alsa.conf")

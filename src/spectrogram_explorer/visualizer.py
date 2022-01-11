@@ -70,12 +70,12 @@ def visualize(input_file_name):
 
 def update_file(logger):
     shell = Shell(logger)
-    result = shell.execute_for_stdout("rsync -avz root@10.0.0.181:/root/output/quickAndCurious.jl .")
+    result = shell.execute_for_stdout("rsync -avz root@ambrose:/root/output/output.condout .")
     logger.info(result)
 
 
 if __name__ == '__main__':
     logger = Logger()
     with logger.log_uncaught_exceptions():
-        update_file(logger)
-        visualize("quickAndCurious.jl")
+        # update_file(logger)
+        visualize("output.condout")
