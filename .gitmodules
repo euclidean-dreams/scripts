@@ -1,0 +1,3 @@
+[submodule "lib/impresario-serialization"]
+	path = lib/impresario-serialization
+	url = git@github.com:impresario-systems/impresario-serialization.git
